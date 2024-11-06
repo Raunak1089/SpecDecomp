@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://raunak1089.github.io/all_scripts/stat_script.js"></script>
+    <script src="https://raunak1089.github.io/all_scripts/fontawesome.js"></script>
+
+    <title>Matrix Transformation</title>
+    <style>
+    @import url("https://fonts.googleapis.com/css?family=Comfortaa:400,500,600,700&display=swap");
+    @import url("https://fonts.googleapis.com/css?family=Poppins:400,500,600,700&display=swap");
+    @import url("https://fonts.googleapis.com/css?family=Montserrat:400,500,600,700&display=swap");
+
+        * {
+            font-family: Comfortaa;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        div#curtain {
+          position: absolute;
+          font-family: Montserrat;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: white;
+          font-size: 3em;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 2;
+          transition: transform 0.5s ease;
+        }
+
+        overlay {
+            position: absolute;
+            z-index: 1;
+            width: 80%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        chunk {
+            display: flex;
+            justify-content: space-around;
+        }
+        chunk > div {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        chunk > div > div {
+            cursor: pointer;
+            margin: auto 25px;
+        }
+        chunk > div > div:hover {
+            color: #00c888;
+        }
+        chunk > div > button {
+            padding: 5px 15px;
+            background: black;
+            color: wheat;
+        }
+        chunk > div > button:hover {
+            background: lime;
+            border: 2px solid wheat;
+            color: white
+        }
+        i.fa-solid {
+            transform: translateY(4em);
+        }
+        #image-container {
+            position: relative;
+            border: 1px solid;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        #image {
+            width: 100px;
+            transition: transform 0.5s ease;
+        }
+        #input-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        table#image {
+            border-collapse: collapse;
+        }
+        table#image td {
+            width: 25px;
+            height: 22px;
+            border: 1px solid blue;
+        }
+
+        .matrix-table:hover {
+            transition: transform 0.5s ease;
+            transform: scale(1.5);
+            transform-origin: bottom;
+        }
+
+
+
+    svg#myCanvas {
+      position: absolute;
+      background: wheat;
+      z-index: -1;
+      top: 0;
+    }
+
+    svg svg {
+      position: absolute;
+      background: none;
+    }
+
+    text {
+      user-select: none;
+    }
+
+    #x-axis line,
+    #y-axis line {
+      stroke: black;
+      stroke-width: 1;
+    }
+
+    line#subaxes {
+      stroke: #aaa;
+      stroke-width: 1;
+    }
+
+    #x-axis text,
+    #y-axis text {
+      fill: black;
+      fill-opacity: 0.5;
+      font-family: "Arial";
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    #egnvctr1, #egnvctr2 {
+      stroke-width: 2;
+    }
+
+    #egnvctr1 line, #egnvctr2 line {
+      transition: transform 0.5s ease;
+    }
+
+    </style>
+</head>
+<body>
+  <div id="curtain" onclick="this.style.transform='translateY(-100%)'">
+    SPECTRAL DECOMPOSITION
+  </div>
+    <overlay style="top: 43px; align-items: baseline; left: 75px;">
+    <div id="input-container">
+        <table style="border-collapse: collapse; font-size: 1.2em;"><tbody><tr>
+            <td contenteditable style="padding: 10px 15px; text-align: center; font-weight: bold;
+                    border-left: 2px solid; 
+                    ;">
+            2
+        </td><td contenteditable style="padding: 10px 15px; text-align: center; font-weight: bold;
+                    border-right: 2px solid;" oninput="this.parentElement.parentElement.children[1].children[0].innerText = this.innerText;">
+            1
+        </td></tr><tr><td style="padding: 10px 15px; text-align: center; font-weight: bold;
+                    border-left: 2px solid; 
+                    ;">
+            1
+        </td><td contenteditable style="padding: 10px 15px; text-align: center; font-weight: bold;
+                    border-right: 2px solid;">
+            3
+        </td></tr></tbody></table>
+        <button onclick="go()" style="background: black; color: wheat;">GO</button>
+    </div>
+    </overlay>
+    <div id="image-container">
+        <!-- SVG Background -->
+        <svg id="myCanvas" height="500" width="500">
+            <svg id="x-axis" height="500" width="500">
+              <line x1="0" y1="250" x2="500" y2="250" />
+            </svg>
+      
+            <svg id="y-axis" height="500" width="500">
+              <line x1="250" y1="0" x2="250" y2="500" />
+            </svg>
+      
+            <svg id="egnvctr1" height="500" width="500">
+            </svg>
+      
+            <svg id="egnvctr2" height="500" width="500">
+            </svg>
+        </svg>
+      
+        <!-- Image to be Transformed -->
+         <table id="image"></table>
+         <!-- <div id=image>
+          <svg height="140" width="500" xmlns="http://www.w3.org/2000/svg">
+            <ellipse x="100" ry="50" cx="120" cy="80"
+            style="fill:yellow;stroke:green;stroke-width:3" />
+          </svg>          
+         </div> -->
+       
+        <!-- <img id="image" src="https://www.svgrepo.com/show/508699/landscape-placeholder.svg" alt="Image"> -->
+        <!-- <img id="image" src="file:///C:/Users/DELL/Downloads/me-circle.png" alt="Image"> -->
+    </div>
+
+
+    <overlay style="bottom: 0; opacity: 0;">
+    <!-- <button id="identity">Identity</button> -->
+
+    <h3>Spectral Decompostion</h3>
+	<chunk>
+		<div class="matrix-table"><div id="SpectralDecomposition_U"></div> <button id="Umat">APPLY (U)</button></div>
+        <i class="fa-solid fa-xmark"></i>
+		<div class="matrix-table"><div id="SpectralDecomposition_L"></div> <button id="Lmat">APPLY (&Lambda;)</button></div>
+        <i class="fa-solid fa-xmark"></i>
+		<div class="matrix-table"><div id="SpectralDecomposition_UT"></div> <button id="UTmat">APPLY (U<sup>T</sup>)</button></div>
+        <i class="fa-solid fa-equals"></i>
+		<div class="matrix-table"><div id="Result_SD"></div> <button id="resultMat">APPLY (A)</button></div>
+	</chunk>
+    </overlay>
+
+<script>
+    var canvas = document.getElementById("myCanvas");
+    let canvas_width, canvas_height;
+
+    let originx;
+    let originy;
+
+    function setDim(given_w, given_h) {
+      for (c of document.querySelectorAll("svg")) {
+        c.width.baseVal.value = given_w;
+        c.height.baseVal.value = given_h;
+      }
+      originx = given_w / 2;
+      originy = given_h / 2;
+
+      canvas_width = given_w;
+      canvas_height = given_h;
+    }
+
+    setDim(window.innerWidth, window.innerHeight);
+
+    window.addEventListener("resize", () => {
+      setDim(window.innerWidth, window.innerHeight);
+      draw_axes();
+    });
+
+    let scale = 100;
+    draw_axes();
+
+    function draw_axes() {
+      let x_axis = document.querySelector("#x-axis");
+      let y_axis = document.querySelector("#y-axis");
+      x_axis.innerHTML = `<line x1="0" y1="${originy}" x2="${canvas_width}" y2="${originy}" />`;
+      y_axis.innerHTML = `<line x1="${originx}" y1="0" x2="${originx}" y2="${canvas_height}" />`;
+
+      let step = Math.pow(2, Math.floor(Math.log2(100 / scale)));
+
+      //  MAIN X AXIS
+      for (
+        let i = floor(step, (-1 * originx) / scale);
+        i <= floor(step, (canvas.width.baseVal.value - originx) / scale);
+        i += step
+      ) {
+        x_axis.innerHTML += `<line x1="${originx + scale * i}" y1="${
+          originy - 5
+        }" x2="${originx + scale * i}" y2="${originy + 5}" />`;
+        if (i != 0) {
+          x_axis.innerHTML += `<text x="${originx + scale * i}" 
+          y="${originy + 17}">${i}</text>`;
+          let thisText = x_axis.querySelector("text:last-child");
+          let width = thisText.getBBox().width;
+          thisText.setAttribute("x", thisText.getAttribute("x") - width / 2);
+        }
+      }
+
+      // SUB X AXES
+      for (
+        let i = floor(step/2, (-1 * originx) / scale);
+        i <= floor(step/2, (canvas.width.baseVal.value - originx) / scale);
+        i += step/2
+      ) {
+        x_axis.innerHTML += `<line id="subaxes" x1="${originx + scale * i}" 
+        y1="0" x2="${originx + scale * i}" y2="${canvas_height}" />`;
+      }
+
+      //  MAIN Y AXIS
+      for (
+        let i = floor(step, originy / scale);
+        i >= -1 * floor(step, (canvas.height.baseVal.value - originy) / scale);
+        i -= step
+      ) {
+        y_axis.innerHTML += `<line x1="${originx - 5}" y1="${
+          originy - scale * i
+        }" x2="${originx + 5}" y2="${originy - scale * i}" />`;
+        if (i != 0) {
+          y_axis.innerHTML += `<text x="${originx - 7}" 
+          y="${originy - scale * i + 5}">${i}</text>`;
+          let thisText = y_axis.querySelector("text:last-child");
+          let width = thisText.getBBox().width;
+          thisText.setAttribute("x", thisText.getAttribute("x") - width);
+        }
+      }
+
+      // SUB Y AXES
+      for (
+        let i = floor(step/2, originy / scale);
+        i >= -1 * floor(step/2, (canvas.height.baseVal.value - originy) / scale);
+        i -= step/2
+      ) {
+        y_axis.innerHTML += `<line id="subaxes" x1="0" y1="${originy - scale * i}" 
+        x2="${canvas_width}" y2="${originy - scale * i}" />;`;
+      }
+
+      //  ZERO
+      y_axis.innerHTML += `<text x="${originx - 12}" y="${
+        originy + 15
+      }">0</text>`;
+
+      try {
+      document.querySelector("#egnvctr1").innerHTML = `<line x1="${originx+vector_1[0]}" y1="${originy-vector_1[1]}" x2="${originx-vector_1[0]}" y2="${originy+vector_1[1]}" />`;
+      document.querySelector("#egnvctr2").innerHTML = `<line x1="${originx+vector_2[0]}" y1="${originy-vector_2[1]}" x2="${originx-vector_2[0]}" y2="${originy+vector_2[1]}" />`;
+      } catch (e) {}
+
+    }
+
+</script>
+
+    <script>
+
+    const image = document.getElementById('image');
+
+    let tableHtml = '';
+    for (let i=0; i<4; i++) {
+        tableHtml += '<tr>';
+        for (let j=0; j<4; j++) {
+            tableHtml += `<td></td>`;
+        }
+        tableHtml += '</tr>';
+    }
+    image.innerHTML = tableHtml;
+    
+
+
+    let SpecD, vector_1, vector_2;
+    function go() {
+        document.querySelectorAll('overlay')[1].style.opacity = 1;
+        // Get matrix from table
+        const given_matrix = document.querySelector('#input-container table').innerText.split('\n').map(row=>row.split('\t').map(c=>Number(c)));
+
+        applyTransformation(given_matrix, image);
+
+        SpecD = Matrix.SpecDecomp(given_matrix);
+        document.querySelector("#SpectralDecomposition_U").innerHTML = generateMatrixHTML(SpecD[0].map(row => row.map(x => round(x,4))));
+        document.querySelector("#SpectralDecomposition_L").innerHTML = generateMatrixHTML(SpecD[1].map(row => row.map(x => round(x,4))));
+        document.querySelector("#SpectralDecomposition_UT").innerHTML = generateMatrixHTML(SpecD[2].map(row => row.map(x => round(x,4))));
+        document.querySelector("#Result_SD").innerHTML = generateMatrixHTML(Matrix.multiply_matrices(Matrix.multiply_matrices(SpecD[0], SpecD[1]), SpecD[2]).map(row => row.map(x => round(x,5))));
+        document.querySelector("#SpectralDecomposition_L").querySelectorAll('td')[0].style.color='red';
+        document.querySelector("#SpectralDecomposition_L").querySelectorAll('td')[3].style.color='lime';
+  
+        
+        vector_1 = Vector.times_const(SpecD[2][0], 1000);
+        vector_2 = Vector.times_const(SpecD[2][1], 1000);
+
+
+        document.querySelector("#egnvctr1").innerHTML = `<line x1="${originx+vector_1[0]}" y1="${originy-vector_1[1]}" x2="${originx-vector_1[0]}" y2="${originy+vector_1[1]}" style="stroke: red;" />`;
+        document.querySelector("#egnvctr2").innerHTML = `<line x1="${originx+vector_2[0]}" y1="${originy-vector_2[1]}" x2="${originx-vector_2[0]}" y2="${originy+vector_2[1]}" style="stroke: lime;" />`;
+
+        document.querySelector("#egnvctr1 line").style.transformOrigin=`${originx}px ${originy}px`;
+        document.querySelector("#egnvctr2 line").style.transformOrigin=`${originx}px ${originy}px`;
+
+
+        let transf_1 = SpecD[2];
+        let transf_2 = Matrix.multiply_matrices(Matrix.multiply_matrices(SpecD[0], SpecD[1]), SpecD[2]);
+        let BC = Matrix.multiply_matrices(SpecD[1], SpecD[2]);
+        let transf_3 = Matrix.multiply_matrices(Matrix.multiply_matrices(Matrix.inverse(BC), SpecD[0]), BC);
+        
+        
+        document.querySelector('#Umat').onclick = () => {
+            applyTransformation(transf_3, image, true);
+            applyTransformation(transf_3, document.querySelector("#egnvctr1 line"), true);
+            applyTransformation(transf_3, document.querySelector("#egnvctr2 line"), true);
+        }
+        document.querySelector('#Lmat').onclick = () => {
+            applyTransformation(transf_2, image, true);
+            applyTransformation(transf_2, document.querySelector("#egnvctr1 line"), true);
+            applyTransformation(transf_2, document.querySelector("#egnvctr2 line"), true);
+        }
+        document.querySelector('#UTmat').onclick = () => {
+            applyTransformation(transf_1, image, true);
+            applyTransformation(transf_1, document.querySelector("#egnvctr1 line"), true);
+            applyTransformation(transf_1, document.querySelector("#egnvctr2 line"), true);
+        }
+        document.querySelector('#resultMat').onclick = () => {
+            applyTransformation(given_matrix, image);
+        }
+
+
+        /* document.querySelector('#identity').onclick = () => {
+            applyTransformation([[1,0], [0,1]], image);
+        } */
+        document.onkeydown = (e) => {
+            if(e.code == "KeyI") applyTransformation([[1,0], [0,1]], image);
+            document.querySelector("#egnvctr1 line").style.transform = "";
+            document.querySelector("#egnvctr2 line").style.transform = "";
+        }
+
+    }
+
+
+        function applyTransformation(mat, img, add = false) {
+            const [a, c] = mat[0];
+            const [b, d] = mat[1];
+            if (add) img.style.transform += ` matrix(${a}, ${-b}, ${-c}, ${d}, 0, 0)`;
+            else img.style.transform = `matrix(${a}, ${-b}, ${-c}, ${d}, 0, 0)`;
+        }
+
+        function generateMatrixHTML(matrix) {
+            let html = `<div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">`;
+            html += `<table style="border-collapse: collapse; font-size: 1.2em;">`;
+            for (let i = 0; i < matrix.length; i++) {
+                html += `<tr>`;  // Start a new table row
+
+                for (let j = 0; j < matrix[i].length; j++) {
+                html += `<td style="padding: 10px 15px; text-align: center; font-weight: bold;
+                                    ${j === 0 ? 'border-left: 2px solid black;' : ''} 
+                                    ${j === matrix[i].length - 1 ? 'border-right: 2px solid black;' : ''};">
+                            ${matrix[i][j]}
+                        </td>`;
+                }
+
+                html += `</tr>`; // End the table row
+            }
+
+            html += `</table>`; // Close the table
+            html += `</div>`; // Close the main container div
+
+            return html;
+		}
+
+
+    </script>
+</body>
+</html>
